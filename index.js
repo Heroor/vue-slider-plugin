@@ -3,10 +3,11 @@ class Slider {
     if (!options.ele) {
       return
     }
-    this.delay = options.delay || 500
-    this.loop = options.loop || true
-    this.autoplay = options.autoPlay || true
-    this.duration = Math.min(Math.max(options.duration, 0), 1)
+    this.delay = Math.max(options.delay * 1000, 0) || 3000
+    this.loop = options.loop
+    this.autoplay = options.autoPlay
+    this.duration = Math.min(Math.max(options.duration, 0), this.delay / 1000 - .1)
+    this.dots = options.dots
     this.sliderEle = options.ele
     this.container = this.sliderEle.children[0]
     this.sliderDisplay = window.getComputedStyle(this.container).display
@@ -18,6 +19,7 @@ class Slider {
 
   init() {
     let containerWidth = 0
+    this.currentIndex = 0
     this.sliderWidth = this.sliderEle.clientWidth
     this.items = [].slice.call(this.container.children)
     this.itemLength = this.items.length
@@ -27,7 +29,8 @@ class Slider {
     containerWidth = this.sliderWidth * (this.itemLength + 2)
     this.container.style.width = containerWidth + 'px'
     this.paddingBothSides()
-    this.translate(this.container, -this.sliderWidth, 'X')
+    this.dots && this.initDots()
+    this.setContainer()
     this.setTransition(this.container, this.duration)
     this.container.style.display = this.sliderDisplay
   }
@@ -54,37 +57,78 @@ class Slider {
   }
 
   onloop() {
-    this.currentIndex = 1
     this._timer = null
-    this.isTransition = true
-    this._timer = window[this.loop ? 'setInterval' : 'setTimeout'](() => {
-      if (!this.isTransition) {
-        this.setTransition(this.container, this.duration)
-        this.isTransition = true
+    this._timer = setInterval(() => {
+      this.setContainer()
+      if (!this.loop && this.currentIndex === this.itemLength) {
+        clearInterval(this._timer)
+        return
       }
-      var position = this.sliderWidth * (++this.currentIndex)
-      this.translate(this.container, -position, 'X')
-      if (this.currentIndex === this.itemLength + 1) {
+      if (this.currentIndex > this.itemLength) {
         this.currentIndex = 1
       }
     }, this.delay)
   }
 
+  setContainer() {
+    if (this.noTransition) {
+      this.setTransition(this.container, this.duration)
+      this.noTransition = false
+    }
+    var position = this.sliderWidth * (++this.currentIndex)
+    this.translate(this.container, -position, 'X')
+    this.dots && this.setDots()
+  }
+
+  setDots() {
+    const dotContainer = this.sliderEle.getElementsByClassName('dots')[0]
+    const index = (this.currentIndex - 1) % this.itemLength
+    const dots = dotContainer.children
+    this.items.forEach((v, i) => {
+    	if (i === index) {
+    		dots[i].classList.add('active')
+    	} else {
+    		dots[i].classList.remove('active')
+    	}
+    })
+  }
+
+  initDots() {
+    var dot = `<span></span>`
+    var innerHtmlDot = []
+    this.items.forEach(v => {
+      innerHtmlDot.push(dot)
+    })
+    this.dotsConteiner = document.createElement('div')
+    this.dotsConteiner.className = 'dots'
+    this.dotsConteiner.innerHTML = innerHtmlDot.join('')
+    this.sliderEle.appendChild(this.dotsConteiner)
+  }
+  
   initEvent() {
     document.addEventListener('transitionend', event => {
       if (this.currentIndex === 1) {
-        this.isTransition = false
+        this.noTransition = true
         this.removeTransition(this.container)
         this.translate(this.container, -this.sliderWidth, 'X')
       }
     })
+    this.sliderEle.onmouseenter = (e) => {
+    	clearInterval(this._timer);
+    }
+    this.sliderEle.onmouseleave = (e) => {
+    	this.onloop()
+    }
   }
 }
 
 new Slider({
   ele: document.getElementById('slider'),
-  delay: 1000,
+  delay: 1,
   loop: true,
   autoPlay: true,
-  duration: .4,
+  duration: 0.6,
+  dots: true,
+  // dotColor: '',
+  // dotActiveColor: ''
 });
