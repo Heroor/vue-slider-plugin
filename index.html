@@ -37,17 +37,49 @@
     display: inline-block;
     width: 8px;
     height: 8px;
-    background: rgba(255, 255, 255, .4);
+    background: rgba(255, 255, 255, .8);
     border-radius: 10px;
+    cursor: pointer;
+    opacity: .8;
+    transition: width .2s ease-out;
   }
 
   .slider .dots span:not(:first-child) {
-		margin-left: 5px;
+    margin-left: 5px;
   }
 
   .slider .dots span.active {
-  	width: 16px;
-    background: rgba(255, 255, 255, .8);
+    width: 16px;
+    opacity: 1;
+  }
+
+  .slider .dots span:hover {
+    opacity: 1;
+  }
+
+  .slider__ctrl {
+    position: absolute;
+    width: 36px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 8px 0;
+    cursor: pointer;
+  }
+
+  .slider__ctrl:hover {
+    opacity: .8;
+  }
+
+  .slider__ctrl:active {
+    opacity: .5;
+  }
+
+  .slider__ctrl__left {
+    left: 0;
+  }
+
+  .slider__ctrl__right {
+    right: 0;
   }
   </style>
 </head>
@@ -60,7 +92,6 @@
       <div><img src="./3.jpg"></div>
     </div>
   </div>
-
   <script src="./index.js"></script>
 </body>
 
